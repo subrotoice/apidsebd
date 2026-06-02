@@ -17,6 +17,10 @@ function parseVolume(value) {
   return parsed === null ? null : Math.trunc(parsed);
 }
 
+function parseInteger(value) {
+  return parseVolume(value);
+}
+
 function parseLatestSharePriceHtml(html) {
   const $ = cheerio.load(html);
   const stocks = [];
@@ -35,6 +39,13 @@ function parseLatestSharePriceHtml(html) {
     stocks.push({
       tradingCode,
       ltp: parseNumber($(columns[2]).text()),
+      high: parseNumber($(columns[3]).text()),
+      low: parseNumber($(columns[4]).text()),
+      closePrice: parseNumber($(columns[5]).text()),
+      ycp: parseNumber($(columns[6]).text()),
+      change: parseNumber($(columns[7]).text()),
+      trade: parseInteger($(columns[8]).text()),
+      valueMn: parseNumber($(columns[9]).text()),
       volume: parseVolume($(columns[10]).text())
     });
   });

@@ -14,10 +14,15 @@ const cache = {
   refreshInProgress: false
 };
 
+function toBdtISOString(date = new Date()) {
+  const bdtOffsetMs = 6 * 60 * 60 * 1000;
+  return new Date(date.getTime() + bdtOffsetMs).toISOString().replace('Z', '+06:00');
+}
+
 function updateCache(stocks) {
   cache.stocks = stocks;
   cache.stockByCode = new Map(stocks.map((stock) => [stock.tradingCode.toUpperCase(), stock]));
-  cache.lastUpdated = new Date().toISOString();
+  cache.lastUpdated = toBdtISOString();
   cache.lastError = null;
 }
 
@@ -35,7 +40,7 @@ async function refreshStockCache(fetcher = fetchLatestSharePrices) {
   } catch (error) {
     cache.lastError = {
       message: error.message,
-      time: new Date().toISOString()
+      time: toBdtISOString()
     };
     console.error(`DSE refresh failed: ${error.message}`);
   } finally {
@@ -106,5 +111,6 @@ module.exports = {
   cache,
   refreshStockCache,
   REFRESH_INTERVAL_MS,
-  startServer
+  startServer,
+  toBdtISOString
 };
