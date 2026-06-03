@@ -1,4 +1,5 @@
 const express = require('express');
+const serverless = require('serverless-http');
 const { fetchLatestSharePrices } = require('./scraper');
 
 const PORT = Number(process.env.PORT || 3000);
@@ -47,6 +48,14 @@ async function refreshStockCache(fetcher = fetchLatestSharePrices) {
     cache.refreshInProgress = false;
   }
 }
+
+// Middleware to ensure cache is populated in serverless environment
+app.use(async (req, res, next) => {
+  if (!cache.lastUpdated && !cache.refreshInProgress) {
+    await refreshStockCache();
+  }
+  next();
+});
 
 app.get('/health', (_req, res) => {
   res.json({
@@ -106,11 +115,13 @@ if (require.main === module) {
   startServer();
 }
 
+// Export for Netlify Functions
 module.exports = {
   app,
   cache,
   refreshStockCache,
   REFRESH_INTERVAL_MS,
   startServer,
-  toBdtISOString
+  toBdtISOString,
+  handler: serverless(app)
 };
